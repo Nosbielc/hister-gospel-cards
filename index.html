@@ -143,10 +143,12 @@
     }
 
     function normalizeSong(raw) {
+      const yearValue = String(raw.ano ?? raw.year ?? '').trim();
+      const parsedYear = Number.parseInt(yearValue, 10);
       return {
         nome: String(raw.nome ?? raw.titulo ?? raw.title ?? '').trim(),
         artista: String(raw.artista ?? raw.cantor ?? raw.ministerio ?? raw.artist ?? '').trim(),
-        ano: Number(raw.ano ?? raw.year ?? ''),
+        ano: Number.isInteger(parsedYear) && parsedYear > 0 ? parsedYear : NaN,
         link: String(raw.link ?? raw.url ?? raw.youtube ?? '').trim()
       };
     }
@@ -170,7 +172,7 @@
       } else {
         const lines = trimmed.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
         parsed = lines.map((line) => {
-          const [nome, artista, ano, link] = line.split(';').map((piece) => piece?.trim());
+          const [nome, artista, ano, link] = line.split(';').map((piece) => piece.trim());
           if (!nome || !artista || !ano || !link) {
             throw new Error('Formato por linha inválido. Use: nome;artista;ano;link');
           }
@@ -195,7 +197,7 @@
       return blocks;
     }
 
-    function createCard(song, index) {
+    function createCard(song) {
       const card = document.createElement('article');
       card.className = 'card';
 
@@ -239,7 +241,6 @@
       const qrBox = document.createElement('div');
       qrBox.className = 'qr-box';
       const qrTarget = document.createElement('div');
-      qrTarget.id = `qr-${index}`;
       qrBox.appendChild(qrTarget);
       qrCol.appendChild(qrBox);
 
@@ -249,8 +250,8 @@
       requestAnimationFrame(() => {
         new QRCode(qrTarget, {
           text: song.link,
-          width: 480,
-          height: 480,
+          width: 256,
+          height: 256,
           correctLevel: QRCode.CorrectLevel.H
         });
       });
@@ -272,7 +273,7 @@
         for (let i = 0; i < 8; i += 1) {
           const song = pageSongs[i];
           if (song) {
-            grid.appendChild(createCard(song, (pageIndex * 8) + i));
+            grid.appendChild(createCard(song));
           } else {
             const placeholder = document.createElement('div');
             placeholder.className = 'card';
