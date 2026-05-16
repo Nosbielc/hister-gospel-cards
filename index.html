@@ -132,10 +132,20 @@
     const statusEl = document.getElementById('status');
     const YEAR_PATTERN = /^\d{4}$/;
     const MIN_VALID_YEAR = 1900;
+    const QR_SIZE_DEFAULT = 120;
     const CARDS_PER_SHEET = 8;
 
     function getQrSize() {
-      return Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--qr-size')) || 120;
+      return Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--qr-size')) || QR_SIZE_DEFAULT;
+    }
+
+    function isValidHttpUrl(value) {
+      try {
+        const parsed = new URL(value);
+        return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+      } catch {
+        return false;
+      }
     }
 
     const exampleSongs = [
@@ -164,7 +174,7 @@
     }
 
     function isValidSong(song) {
-      return Boolean(song.nome && song.artista && song.link && Number.isInteger(song.ano));
+      return Boolean(song.nome && song.artista && Number.isInteger(song.ano) && isValidHttpUrl(song.link));
     }
 
     function parseSongs(text) {
