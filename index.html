@@ -39,17 +39,27 @@
       border: 1.5px dotted #4b5563;
       border-radius: 10px;
       padding: 10px;
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
       background: #fff;
       overflow: hidden;
       min-height: 0;
+      text-align: center;
     }
 
     .card h3 {
       line-height: 1.2;
       word-break: break-word;
+    }
+
+    .card-back {
+      align-items: flex-start;
+      justify-content: flex-start;
+      gap: 14px;
+      text-align: left;
     }
 
     .qr-box {
@@ -70,6 +80,19 @@
       width: calc(var(--qr-size) * 1px) !important;
       height: calc(var(--qr-size) * 1px) !important;
       image-rendering: pixelated;
+    }
+
+    .sheet-label {
+      display: inline-flex;
+      margin-bottom: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: #e2e8f0;
+      color: #334155;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
     }
 
     @page {
@@ -228,42 +251,6 @@
     function createCard(song) {
       const card = document.createElement('article');
       card.className = 'card';
-
-      const textCol = document.createElement('div');
-      textCol.className = 'flex flex-col justify-between min-w-0';
-
-      const header = document.createElement('div');
-      const title = document.createElement('h3');
-      title.className = 'text-base font-bold';
-      title.textContent = song.nome;
-      const artist = document.createElement('p');
-      artist.className = 'text-sm text-slate-700 mt-1';
-      artist.textContent = song.artista;
-      header.appendChild(title);
-      header.appendChild(artist);
-
-      const footer = document.createElement('div');
-      footer.className = 'mt-2';
-      const yearLabel = document.createElement('p');
-      yearLabel.className = 'text-xs uppercase tracking-wide text-slate-500';
-      yearLabel.textContent = 'Ano de lançamento';
-      const year = document.createElement('p');
-      year.className = 'text-2xl font-black text-emerald-700 leading-none';
-      year.textContent = String(song.ano);
-      const badge = document.createElement('p');
-      badge.className = 'text-xs mt-2 inline-flex items-center gap-1 px-2 py-1 rounded-full bg-red-50 text-red-700 border border-red-200';
-      const badgeIcon = document.createElement('span');
-      badgeIcon.setAttribute('aria-hidden', 'true');
-      badgeIcon.textContent = '▶';
-      badge.appendChild(badgeIcon);
-      badge.appendChild(document.createTextNode('YouTube Music'));
-      footer.appendChild(yearLabel);
-      footer.appendChild(year);
-      footer.appendChild(badge);
-
-      textCol.appendChild(header);
-      textCol.appendChild(footer);
-
       const qrCol = document.createElement('div');
       qrCol.className = 'flex items-center';
       const qrBox = document.createElement('div');
@@ -272,8 +259,16 @@
       qrBox.appendChild(qrTarget);
       qrCol.appendChild(qrBox);
 
-      card.appendChild(textCol);
+      const badge = document.createElement('p');
+      badge.className = 'text-xs inline-flex items-center gap-1 px-2 py-1 rounded-full bg-red-50 text-red-700 border border-red-200';
+      const badgeIcon = document.createElement('span');
+      badgeIcon.setAttribute('aria-hidden', 'true');
+      badgeIcon.textContent = '▶';
+      badge.appendChild(badgeIcon);
+      badge.appendChild(document.createTextNode('YouTube Music'));
+
       card.appendChild(qrCol);
+      card.appendChild(badge);
 
       const qrSize = getQrSize();
       try {
@@ -290,34 +285,99 @@
       return card;
     }
 
+    function createCardBack(song) {
+      const card = document.createElement('article');
+      card.className = 'card card-back';
+
+      const header = document.createElement('div');
+      header.className = 'w-full min-w-0';
+      const artistLabel = document.createElement('p');
+      artistLabel.className = 'text-xs uppercase tracking-wide text-slate-500';
+      artistLabel.textContent = 'Artista';
+      const artist = document.createElement('p');
+      artist.className = 'text-sm text-slate-700 mt-1';
+      artist.textContent = song.artista;
+      header.appendChild(artistLabel);
+      header.appendChild(artist);
+
+      const content = document.createElement('div');
+      content.className = 'w-full min-w-0';
+      const titleLabel = document.createElement('p');
+      titleLabel.className = 'text-xs uppercase tracking-wide text-slate-500';
+      titleLabel.textContent = 'Música';
+      const title = document.createElement('h3');
+      title.className = 'text-lg font-bold mt-1';
+      title.textContent = song.nome;
+      content.appendChild(titleLabel);
+      content.appendChild(title);
+
+      const footer = document.createElement('div');
+      footer.className = 'w-full';
+      const yearLabel = document.createElement('p');
+      yearLabel.className = 'text-xs uppercase tracking-wide text-slate-500';
+      yearLabel.textContent = 'Ano';
+      const year = document.createElement('p');
+      year.className = 'text-2xl font-black text-emerald-700 leading-none mt-1';
+      year.textContent = String(song.ano);
+      footer.appendChild(yearLabel);
+      footer.appendChild(year);
+
+      card.appendChild(header);
+      card.appendChild(content);
+      card.appendChild(footer);
+      return card;
+    }
+
+    function createPlaceholderCard() {
+      const placeholder = document.createElement('div');
+      placeholder.className = 'card';
+      const placeholderText = document.createElement('div');
+      placeholderText.className = 'text-xs text-slate-300 self-center';
+      placeholderText.textContent = 'Espaço vazio';
+      placeholder.appendChild(placeholderText);
+      return placeholder;
+    }
+
+    function mirrorForBackSide(cards) {
+      const mirrored = [];
+      for (let i = 0; i < cards.length; i += 2) {
+        mirrored.push(cards[i + 1] ?? null, cards[i] ?? null);
+      }
+      return mirrored;
+    }
+
+    function createSheet(cards, side) {
+      const sheet = document.createElement('section');
+      sheet.className = 'sheet';
+
+      const label = document.createElement('p');
+      label.className = 'sheet-label no-print';
+      label.textContent = side;
+
+      const grid = document.createElement('div');
+      grid.className = 'cards-grid';
+
+      cards.forEach((song) => {
+        if (song) {
+          grid.appendChild(side === 'Frente' ? createCard(song) : createCardBack(song));
+        } else {
+          grid.appendChild(createPlaceholderCard());
+        }
+      });
+
+      sheet.appendChild(label);
+      sheet.appendChild(grid);
+      return sheet;
+    }
+
     function renderSheets(songs) {
       sheetsContainer.innerHTML = '';
       const pages = chunk(songs, CARDS_PER_SHEET);
 
-      pages.forEach((pageSongs, pageIndex) => {
-        const sheet = document.createElement('section');
-        sheet.className = 'sheet';
-
-        const grid = document.createElement('div');
-        grid.className = 'cards-grid';
-
-        for (let i = 0; i < CARDS_PER_SHEET; i += 1) {
-          const song = pageSongs[i];
-          if (song) {
-            grid.appendChild(createCard(song));
-          } else {
-            const placeholder = document.createElement('div');
-            placeholder.className = 'card';
-            const placeholderText = document.createElement('div');
-            placeholderText.className = 'text-xs text-slate-300 self-center';
-            placeholderText.textContent = 'Espaço vazio';
-            placeholder.appendChild(placeholderText);
-            grid.appendChild(placeholder);
-          }
-        }
-
-        sheet.appendChild(grid);
-        sheetsContainer.appendChild(sheet);
+      pages.forEach((pageSongs) => {
+        const slots = Array.from({ length: CARDS_PER_SHEET }, (_, index) => pageSongs[index] ?? null);
+        sheetsContainer.appendChild(createSheet(slots, 'Frente'));
+        sheetsContainer.appendChild(createSheet(mirrorForBackSide(slots), 'Verso'));
       });
     }
 
