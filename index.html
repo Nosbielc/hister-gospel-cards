@@ -12,6 +12,8 @@
       --page-height: 297mm;
       --sheet-padding: 8mm;
       --gap: 4mm;
+      --qr-size: 120px;
+      --qr-box-size: 128px;
     }
 
     .sheet {
@@ -51,9 +53,9 @@
     }
 
     .qr-box {
-      width: 128px;
-      min-width: 128px;
-      min-height: 128px;
+      width: var(--qr-box-size);
+      min-width: var(--qr-box-size);
+      min-height: var(--qr-box-size);
       border: 1px solid #e5e7eb;
       border-radius: 8px;
       display: flex;
@@ -65,8 +67,8 @@
 
     .qr-box canvas,
     .qr-box img {
-      width: 120px !important;
-      height: 120px !important;
+      width: var(--qr-size) !important;
+      height: var(--qr-size) !important;
       image-rendering: pixelated;
     }
 
@@ -128,6 +130,7 @@
     const printBtn = document.getElementById('printBtn');
     const sheetsContainer = document.getElementById('sheetsContainer');
     const statusEl = document.getElementById('status');
+    const QR_SIZE = 120;
 
     const exampleSongs = [
       { nome: 'Raridade', artista: 'Anderson Freire', ano: 2013, link: 'https://music.youtube.com/watch?v=m7bW7LzE6p8' },
@@ -145,7 +148,7 @@
     function normalizeSong(raw) {
       const yearValue = String(raw.ano ?? raw.year ?? '').trim();
       const parsedYear = /^\d{4}$/.test(yearValue) ? Number.parseInt(yearValue, 10) : NaN;
-      const maxValidYear = new Date().getFullYear() + 1;
+      const maxValidYear = new Date().getFullYear();
       return {
         nome: String(raw.nome ?? raw.titulo ?? raw.title ?? '').trim(),
         artista: String(raw.artista ?? raw.cantor ?? raw.ministerio ?? raw.artist ?? '').trim(),
@@ -251,8 +254,8 @@
       requestAnimationFrame(() => {
         new QRCode(qrTarget, {
           text: song.link,
-          width: 120,
-          height: 120,
+          width: QR_SIZE,
+          height: QR_SIZE,
           correctLevel: QRCode.CorrectLevel.H
         });
       });
