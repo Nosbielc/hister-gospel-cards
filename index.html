@@ -144,11 +144,12 @@
 
     function normalizeSong(raw) {
       const yearValue = String(raw.ano ?? raw.year ?? '').trim();
-      const parsedYear = Number.parseInt(yearValue, 10);
+      const parsedYear = /^\d{4}$/.test(yearValue) ? Number.parseInt(yearValue, 10) : NaN;
+      const maxValidYear = new Date().getFullYear() + 1;
       return {
         nome: String(raw.nome ?? raw.titulo ?? raw.title ?? '').trim(),
         artista: String(raw.artista ?? raw.cantor ?? raw.ministerio ?? raw.artist ?? '').trim(),
-        ano: Number.isInteger(parsedYear) && parsedYear > 0 ? parsedYear : NaN,
+        ano: Number.isInteger(parsedYear) && parsedYear >= 1900 && parsedYear <= maxValidYear ? parsedYear : NaN,
         link: String(raw.link ?? raw.url ?? raw.youtube ?? '').trim()
       };
     }
@@ -250,8 +251,8 @@
       requestAnimationFrame(() => {
         new QRCode(qrTarget, {
           text: song.link,
-          width: 256,
-          height: 256,
+          width: 120,
+          height: 120,
           correctLevel: QRCode.CorrectLevel.H
         });
       });
