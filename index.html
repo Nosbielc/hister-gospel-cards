@@ -154,9 +154,11 @@
     const sheetsContainer = document.getElementById('sheetsContainer');
     const statusEl = document.getElementById('status');
     const YEAR_PATTERN = /^\d{4}$/;
+    const VIDEO_ID_PATTERN = /^[a-zA-Z0-9_-]{11}$/;
     const MIN_VALID_YEAR = 1900;
     const QR_SIZE_DEFAULT = 120;
     const CARDS_PER_SHEET = 8;
+    const VIDEO_ID_FALLBACK = 'N/D';
 
     function getQrSize() {
       return Number.parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--qr-size')) || QR_SIZE_DEFAULT;
@@ -169,6 +171,37 @@
       } catch {
         return false;
       }
+    }
+
+    function extractVideoId(link) {
+      const getValidVideoId = (value) => {
+        const candidate = String(value ?? '').trim();
+        return VIDEO_ID_PATTERN.test(candidate) ? candidate : '';
+      };
+      if (!link || !String(link).trim()) {
+        return '';
+      }
+
+      try {
+        const parsed = new URL(link);
+        const vParam = parsed.searchParams.get('v');
+        const validVParam = getValidVideoId(vParam);
+        if (validVParam) {
+          return validVParam;
+        }
+
+        const pathParts = parsed.pathname.split('/').filter(Boolean);
+        const hostname = parsed.hostname.toLowerCase();
+        if (hostname === 'youtu.be' || hostname.endsWith('.youtu.be')) {
+          return getValidVideoId(pathParts[0]);
+        }
+        if ((pathParts[0] === 'shorts' || pathParts[0] === 'embed') && pathParts.length > 1) {
+          return getValidVideoId(pathParts[1]);
+        }
+      } catch {
+        return '';
+      }
+      return '';
     }
 
     const exampleSongs = [
@@ -188,11 +221,13 @@
       const yearValue = String(raw.ano ?? raw.year ?? '').trim();
       const parsedYear = YEAR_PATTERN.test(yearValue) ? Number.parseInt(yearValue, 10) : NaN;
       const maxValidYear = new Date().getFullYear();
+      const link = String(raw.link ?? raw.url ?? raw.youtube ?? '').trim();
       return {
         nome: String(raw.nome ?? raw.titulo ?? raw.title ?? '').trim(),
         artista: String(raw.artista ?? raw.cantor ?? raw.ministerio ?? raw.artist ?? '').trim(),
         ano: Number.isInteger(parsedYear) && parsedYear >= MIN_VALID_YEAR && parsedYear <= maxValidYear ? parsedYear : NaN,
-        link: String(raw.link ?? raw.url ?? raw.youtube ?? '').trim()
+        link,
+        videoId: extractVideoId(link)
       };
     }
 
@@ -270,6 +305,11 @@
       card.appendChild(qrCol);
       card.appendChild(badge);
 
+      const frontFooter = document.createElement('p');
+      frontFooter.className = 'w-full mt-auto text-[11px] font-mono text-slate-500 break-all';
+      frontFooter.textContent = `ID: ${song.videoId || VIDEO_ID_FALLBACK}`;
+      card.appendChild(frontFooter);
+
       const qrSize = getQrSize();
       try {
         new QRCode(qrTarget, {
@@ -313,14 +353,14 @@
 
       const footer = document.createElement('div');
       footer.className = 'w-full';
-      const yearLabel = document.createElement('p');
-      yearLabel.className = 'text-xs uppercase tracking-wide text-slate-500';
-      yearLabel.textContent = 'Ano';
       const year = document.createElement('p');
-      year.className = 'text-2xl font-black text-emerald-700 leading-none mt-1';
-      year.textContent = String(song.ano);
-      footer.appendChild(yearLabel);
+      year.className = 'text-sm font-semibold text-emerald-700';
+      year.textContent = `Ano: ${String(song.ano)}`;
+      const videoIdText = document.createElement('p');
+      videoIdText.className = 'text-xs font-mono text-slate-700 mt-1 break-all';
+      videoIdText.textContent = `ID: ${song.videoId || VIDEO_ID_FALLBACK}`;
       footer.appendChild(year);
+      footer.appendChild(videoIdText);
 
       card.appendChild(header);
       card.appendChild(content);
