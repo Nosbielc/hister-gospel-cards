@@ -12,7 +12,7 @@
       --page-height: 297mm;
       --sheet-padding: 8mm;
       --gap: 4mm;
-      --qr-size: 120px;
+      --qr-size: 120;
       --qr-box-size: 128px;
     }
 
@@ -67,8 +67,8 @@
 
     .qr-box canvas,
     .qr-box img {
-      width: var(--qr-size) !important;
-      height: var(--qr-size) !important;
+      width: calc(var(--qr-size) * 1px) !important;
+      height: calc(var(--qr-size) * 1px) !important;
       image-rendering: pixelated;
     }
 
@@ -158,6 +158,10 @@
       };
     }
 
+    function isValidSong(song) {
+      return Boolean(song.nome && song.artista && song.link && Number.isInteger(song.ano));
+    }
+
     function parseSongs(text) {
       const trimmed = text.trim();
       if (!trimmed) {
@@ -185,7 +189,7 @@
         });
       }
 
-      const normalized = parsed.map(normalizeSong).filter((song) => song.nome && song.artista && Number.isFinite(song.ano) && song.link);
+      const normalized = parsed.map(normalizeSong).filter(isValidSong);
 
       if (!normalized.length) {
         throw new Error('Nenhuma música válida encontrada.');
@@ -233,7 +237,7 @@
       badgeIcon.setAttribute('aria-hidden', 'true');
       badgeIcon.textContent = '▶';
       badge.appendChild(badgeIcon);
-      badge.append('YouTube Music');
+      badge.appendChild(document.createTextNode('YouTube Music'));
       footer.appendChild(yearLabel);
       footer.appendChild(year);
       footer.appendChild(badge);
