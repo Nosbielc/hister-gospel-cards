@@ -178,6 +178,9 @@
         const candidate = String(value ?? '').trim();
         return VIDEO_ID_PATTERN.test(candidate) ? candidate : '';
       };
+      if (!link || !String(link).trim()) {
+        return '';
+      }
 
       try {
         const parsed = new URL(link);
@@ -192,7 +195,7 @@
         if (hostname === 'youtu.be' || hostname.endsWith('.youtu.be')) {
           return getValidVideoId(pathParts[0]);
         }
-        if (pathParts[0] === 'shorts' || pathParts[0] === 'embed') {
+        if ((pathParts[0] === 'shorts' || pathParts[0] === 'embed') && pathParts.length > 1) {
           return getValidVideoId(pathParts[1]);
         }
       } catch {
