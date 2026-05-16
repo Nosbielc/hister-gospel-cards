@@ -293,10 +293,10 @@
       card.appendChild(qrCol);
       card.appendChild(badge);
 
-      const footer = document.createElement('p');
-      footer.className = 'w-full mt-auto text-[11px] font-mono text-slate-500 break-all';
-      footer.textContent = `ID: ${song.videoId || 'N/D'}`;
-      card.appendChild(footer);
+      const frontFooter = document.createElement('p');
+      frontFooter.className = 'w-full mt-auto text-[11px] font-mono text-slate-500 break-all';
+      frontFooter.textContent = `ID: ${song.videoId || 'N/D'}`;
+      card.appendChild(frontFooter);
 
       const qrSize = getQrSize();
       try {
@@ -344,11 +344,11 @@
       const year = document.createElement('p');
       year.className = 'text-sm font-semibold text-emerald-700';
       year.textContent = `Ano: ${String(song.ano)}`;
-      const videoId = document.createElement('p');
-      videoId.className = 'text-xs font-mono text-slate-700 mt-1 break-all';
-      videoId.textContent = `ID: ${song.videoId || 'N/D'}`;
+      const videoIdText = document.createElement('p');
+      videoIdText.className = 'text-xs font-mono text-slate-700 mt-1 break-all';
+      videoIdText.textContent = `ID: ${song.videoId || 'N/D'}`;
       footer.appendChild(year);
-      footer.appendChild(videoId);
+      footer.appendChild(videoIdText);
 
       card.appendChild(header);
       card.appendChild(content);
